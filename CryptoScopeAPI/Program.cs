@@ -9,8 +9,27 @@ using CryptoScopeAPI.Features.GetSearchCoin;
 using CryptoScopeAPI.Features.GetCoinDetails;
 using CryptoScopeAPI.Features.GetCoinMarketChart;
 using CryptoScopeAPI;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
+    .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
+    .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
+    .WriteTo.File(
+        "logs/log-.txt",
+        rollingInterval: RollingInterval.Day,
+        restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error
+    )
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 builder.Services.AddHttpClient<ICoinGeckoClient, CoinGeckoClient>(client =>
 {
     client.DefaultRequestHeaders.Add("User-Agent", "CryptoScopeApp");
@@ -41,6 +60,8 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
+app.MapGet("/api/health", () => Results.Ok("Healthy!"));
+
 app.MapGet("/api/coins", async (IMediator mediator) =>
 {
     var result = await mediator.Send(new GetCoinsQuery());
@@ -64,5 +85,11 @@ app.MapGet("/api/coins/{id}/market_chart", async (string id, string days, IMedia
     var result = await mediator.Send(new GetCoinMarketChartQuery(id, days));
     return Results.Ok(result);
 });
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.Run();
