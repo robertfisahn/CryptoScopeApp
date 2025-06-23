@@ -16,8 +16,7 @@ namespace CryptoScopeAPI.Features.GetCoinMarketChart
 
             if (existing == null || existing.LastUpdated < DateTime.UtcNow.AddMinutes(-5))
             {
-                var apiData = await _client.GetCoinMarketChartAsync(request.Id, request.Days, cancellationToken)
-                    ?? throw new Exception("Coin market chart data not found");
+                var apiData = await _client.GetCoinMarketChartAsync(request.Id, request.Days, cancellationToken);
 
                 if (existing == null)
                 {

@@ -20,9 +20,6 @@ public class GetCoinDetailsQueryHandler(ICoinGeckoClient _client, AppDbContext _
         {
             var apiData = await _client.GetCoinDetailsAsync(request.Id, cancellationToken);
 
-            if (apiData == null)
-                throw new Exception("Coin not found");
-
             var entity = _mapper.Map<CoinDetails>(apiData);
             entity.LastUpdated = DateTime.UtcNow;
 
