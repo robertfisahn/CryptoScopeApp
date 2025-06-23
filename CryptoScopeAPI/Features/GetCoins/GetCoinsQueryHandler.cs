@@ -1,31 +1,27 @@
+using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using CryptoScopeAPI.Dtos;
-using CryptoScopeAPI.Services;
-using AutoMapper;
-using CryptoScopeAPI.Models;
+using CryptoScopeAPI.Exceptions;
 
 namespace CryptoScopeAPI.Features.GetCoins
 {
-    public class GetCoinsQueryHandler(AppDbContext _db, ICoinGeckoClient _client, IMapper _mapper)
-    : IRequestHandler<GetCoinsQuery, List<CoinListDto>>
+    public class GetCoinsQueryHandler(AppDbContext _db, IMapper _mapper) : IRequestHandler<GetCoinsQuery, List<CoinListDto>>
     {
         public async Task<List<CoinListDto>> Handle(GetCoinsQuery request, CancellationToken cancellationToken)
         {
-            if (!await _db.Coins.AnyAsync(cancellationToken))
-            {
-                var fetched = await _client.GetTopMarketCoinsAsync();
-                _db.Coins.AddRange(_mapper.Map<Coin>(fetched));
-                await _db.SaveChangesAsync(cancellationToken);
-            }
-
             var coins = await _db.Coins.ToListAsync(cancellationToken);
+
+            if (coins.Count == 0)
+            {
+                throw new NotFoundException("No coins found.");
+            }
 
             var sorted = coins
                 .OrderByDescending(c => c.MarketCapUsd)
                 .ToList();
 
-            return _mapper.Map<List<CoinListDto>>(coins);
+            return _mapper.Map<List<CoinListDto>>(sorted);
         }
     }
 

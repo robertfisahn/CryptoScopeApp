@@ -10,11 +10,12 @@ using CryptoScopeAPI.Features.GetCoinDetails;
 using CryptoScopeAPI.Features.GetCoinMarketChart;
 using CryptoScopeAPI;
 using Serilog;
+using CryptoScopeAPI.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddScoped<ErrorHandlingMiddleware>();
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
+    .MinimumLevel.Debug()
     .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
     .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
     .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
@@ -50,9 +51,16 @@ builder.Services.AddHostedService<SearchCoinSyncService>();
 
 builder.Services.Configure<CoinSyncSettings>(
     builder.Configuration.GetSection("CoinSync"));
-var app = builder.Build();
 
+var app = builder.Build();
+app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseCors();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 using (var scope = app.Services.CreateScope())
 {
@@ -85,11 +93,5 @@ app.MapGet("/api/coins/{id}/market_chart", async (string id, string days, IMedia
     var result = await mediator.Send(new GetCoinMarketChartQuery(id, days));
     return Results.Ok(result);
 });
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
 app.Run();
