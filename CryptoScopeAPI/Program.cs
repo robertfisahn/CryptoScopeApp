@@ -11,6 +11,7 @@ using CryptoScopeAPI.Features.GetCoinMarketChart;
 using CryptoScopeAPI;
 using Serilog;
 using CryptoScopeAPI.Middleware;
+using CryptoScopeAPI.Services.Synchronizers;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<ErrorHandlingMiddleware>();
@@ -48,6 +49,7 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddHostedService<CoinListSyncService>();
 builder.Services.AddHostedService<SearchCoinSyncService>();
+builder.Services.AddScoped<ICoinListSynchronizer, CoinListSynchronizer>();
 
 builder.Services.Configure<CoinSyncSettings>(
     builder.Configuration.GetSection("CoinSync"));
