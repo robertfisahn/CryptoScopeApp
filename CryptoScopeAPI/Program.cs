@@ -37,8 +37,6 @@ builder.Services.AddHttpClient<ICoinGeckoClient, CoinGeckoClient>(client =>
     client.DefaultRequestHeaders.Add("User-Agent", "CryptoScopeApp");
 });
 builder.Services.AddAutoMapper(typeof(CoinMappingProfile));
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=coins.db"));
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 builder.Services.AddCors(options =>
 {
@@ -47,8 +45,16 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
     });
 });
-builder.Services.AddHostedService<CoinListSyncService>();
-builder.Services.AddHostedService<SearchCoinSyncService>();
+
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlite("Data Source=coins.db"));
+
+    builder.Services.AddHostedService<CoinListSyncService>();
+    builder.Services.AddHostedService<SearchCoinSyncService>();
+}
+
 builder.Services.AddScoped<ICoinListSynchronizer, CoinListSynchronizer>();
 
 builder.Services.Configure<CoinSyncSettings>(
@@ -64,8 +70,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-using (var scope = app.Services.CreateScope())
+if (!app.Environment.IsEnvironment("Testing"))
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
@@ -97,3 +104,5 @@ app.MapGet("/api/coins/{id}/market_chart", async (string id, string days, IMedia
 });
 
 app.Run();
+
+public partial class Program { } // For testing purposes, to allow access to the Program class in tests

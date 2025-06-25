@@ -2,7 +2,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using CryptoScopeAPI.Dtos;
-using CryptoScopeAPI.Exceptions;
 
 namespace CryptoScopeAPI.Features.GetSearchCoin
 {
@@ -13,11 +12,6 @@ namespace CryptoScopeAPI.Features.GetSearchCoin
             var coins = await _db.SearchCoins
                 .OrderBy(c => c.Name)
                 .ToListAsync(cancellationToken);
-
-            if (coins.Count == 0)
-            {
-                throw new NotFoundException("No searchable coins found.");
-            }
 
             return _mapper.Map<List<SearchCoinDto>>(coins);
         }

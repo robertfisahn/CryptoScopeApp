@@ -10,18 +10,11 @@ namespace CryptoScopeAPI.Features.GetCoins
     {
         public async Task<List<CoinListDto>> Handle(GetCoinsQuery request, CancellationToken cancellationToken)
         {
-            var coins = await _db.Coins.ToListAsync(cancellationToken);
-
-            if (coins.Count == 0)
-            {
-                throw new NotFoundException("No coins found.");
-            }
-
-            var sorted = coins
+            var coins = await _db.Coins
                 .OrderByDescending(c => c.MarketCapUsd)
-                .ToList();
+                .ToListAsync(cancellationToken);
 
-            return _mapper.Map<List<CoinListDto>>(sorted);
+            return _mapper.Map<List<CoinListDto>>(coins);
         }
     }
 
