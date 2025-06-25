@@ -67,6 +67,9 @@ namespace CryptoScopeAPI.Mappings
                 .ForMember(dest => dest.PricesJson, opt => opt.MapFrom(src => JsonSerializer.Serialize(src.Prices, (JsonSerializerOptions?)null)!))
                 .ForMember(dest => dest.MarketCapsJson, opt => opt.MapFrom(src => JsonSerializer.Serialize(src.MarketCaps, (JsonSerializerOptions?)null)!))
                 .ForMember(dest => dest.TotalVolumesJson, opt => opt.MapFrom(src => JsonSerializer.Serialize(src.TotalVolumes, (JsonSerializerOptions?)null)!));
+
+            CreateMap<SearchCoin, SearchCoinDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.CoinId));
         }
     }
 

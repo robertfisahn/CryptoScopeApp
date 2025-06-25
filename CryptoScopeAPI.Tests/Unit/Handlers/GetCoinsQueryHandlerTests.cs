@@ -44,7 +44,7 @@ public class GetCoinsQueryHandlerTests : IClassFixture<GetCoinsFixture>
     }
 
     [Fact]
-    public async Task Handle_ThrowsNotFoundException_WhenNoCoinsExist()
+    public async Task Handle_ReturnsEmptyList_WhenNoCoinsExist()
     {
         var fixture = new GetCoinsFixture();
         fixture.Context.Coins.RemoveRange(fixture.Context.Coins);
@@ -53,9 +53,9 @@ public class GetCoinsQueryHandlerTests : IClassFixture<GetCoinsFixture>
         var handler = new GetCoinsQueryHandler(fixture.Context, fixture.Mapper);
         var query = new GetCoinsQuery();
 
-        var act = async () => await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
-        await act.Should().ThrowAsync<NotFoundException>()
-            .WithMessage("No coins found.");
+        result.Should().NotBeNull();
+        result.Should().BeEmpty();
     }
 }
