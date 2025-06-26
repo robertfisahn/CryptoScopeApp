@@ -1,11 +1,12 @@
-﻿using CryptoScopeAPI.Dtos;
+﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 using CryptoScopeAPI.Services.Synchronizers;
-using Microsoft.Extensions.Options;
+using CryptoScopeAPI.Dtos;
 
 namespace CryptoScopeAPI.Services;
 
 public class CoinListSyncService(
-    ICoinListSynchronizer synchronizer,
+    IServiceScopeFactory scopeFactory,
     ILogger<CoinListSyncService> logger,
     IOptions<CoinSyncSettings> settings) : BackgroundService
 {
@@ -17,6 +18,9 @@ public class CoinListSyncService(
         {
             try
             {
+                using var scope = scopeFactory.CreateScope();
+
+                var synchronizer = scope.ServiceProvider.GetRequiredService<ICoinListSynchronizer>();
                 await synchronizer.SyncAsync(stoppingToken);
             }
             catch (Exception ex)
