@@ -438,3 +438,6 @@ yarn-error.log*
 
 # local .env files
 .env.local*
+
+CryptoScopeUI/dist
+CryptoScopeAPI/coins.db
