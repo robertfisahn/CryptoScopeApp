@@ -1,8 +1,10 @@
-﻿using CryptoScopeAPI.Tests.Integration.Helpers;
+﻿using CryptoScopeAPI.Services;
+using CryptoScopeAPI.Tests.Integration.Helpers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace CryptoScopeAPI.Tests.Integration.Fixtures;
 
@@ -15,7 +17,7 @@ public abstract class IntegrationTestBase : IClassFixture<WebApplicationFactory<
     {
         _factory = factory.WithWebHostBuilder(builder =>
         {
-            builder.UseEnvironment("Testing");
+            builder.UseEnvironment("IntegrationTest");
 
             builder.ConfigureServices(services =>
             {

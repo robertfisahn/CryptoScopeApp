@@ -2,7 +2,13 @@
   <q-page class="q-pa-md">
     <h1 class="text-h4 q-mb-md">Top 10 Cryptocurrencies (by market cap)</h1>
     <SearchBar />
-    <q-list bordered padding class="rounded-borders bg-grey-1">
+
+    <q-list
+      v-if="coinListStore.coins.length > 0"
+      bordered
+      padding
+      class="rounded-borders bg-grey-1"
+    >
       <q-item
         v-for="coin in coinListStore.coins"
         :key="coin.id"
@@ -23,8 +29,12 @@
           <q-btn
             flat
             :color="watchlistStore.watchlist.includes(coin.id) ? 'negative' : 'primary'"
-            :label="watchlistStore.watchlist.includes(coin.id) ? 'Remove from Watchlist' : 'Add to Watchlist'"
-            @click="watchlistStore.watchlist.includes(coin.id) ? watchlistStore.removeFromWatchlist(coin.id) : watchlistStore.addToWatchlist(coin.id)"
+            :label="watchlistStore.watchlist.includes(coin.id)
+              ? 'Remove from Watchlist'
+              : 'Add to Watchlist'"
+            @click="watchlistStore.watchlist.includes(coin.id)
+              ? watchlistStore.removeFromWatchlist(coin.id)
+              : watchlistStore.addToWatchlist(coin.id)"
           />
 
           <q-item-label caption>
@@ -37,8 +47,18 @@
       </q-item>
     </q-list>
 
+    <div
+      v-else
+      data-testid="empty-state"
+      class="text-caption text-grey text-center q-mt-md"
+    >
+      No coins available
+    </div>
+
     <div class="q-mt-md text-caption text-grey">
-      <span v-if="coinListStore.lastUpdated">Last updated: {{ coinListStore.lastUpdated }}</span>
+      <span v-if="coinListStore.lastUpdated">
+        Last updated: {{ coinListStore.lastUpdated }}
+      </span>
     </div>
   </q-page>
 </template>
@@ -50,5 +70,4 @@ import SearchBar from 'src/components/SearchBar.vue';
 
 const watchlistStore = useWatchlistStore();
 const coinListStore = useCoinListStore();
-
 </script>

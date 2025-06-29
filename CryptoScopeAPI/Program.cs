@@ -12,14 +12,13 @@ using CryptoScopeAPI;
 using Serilog;
 using CryptoScopeAPI.Middleware;
 using CryptoScopeAPI.Services.Synchronizers;
+using CryptoScopeAPI.Test.E2E;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<ErrorHandlingMiddleware>();
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
-    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
     .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
-    .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
     .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
     .WriteTo.File(
         "logs/log-.txt",
@@ -46,11 +45,14 @@ builder.Services.AddCors(options =>
     });
 });
 
-if (!builder.Environment.IsEnvironment("Testing"))
+if (!builder.Environment.IsEnvironment("IntegrationTest"))
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlite("Data Source=coins.db"));
+        options.UseSqlite(builder.Configuration.GetConnectionString("Default")));
+}
 
+if (!builder.Environment.IsEnvironment("Test") && !builder.Environment.IsEnvironment("IntegrationTest"))
+{
     builder.Services.AddHostedService<CoinListSyncService>();
     builder.Services.AddHostedService<SearchCoinSyncService>();
 }
@@ -70,10 +72,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-if (!app.Environment.IsEnvironment("Testing"))
+using var scope = app.Services.CreateScope();
+var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+if (db.Database.IsRelational())
 {
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
 
@@ -102,6 +104,11 @@ app.MapGet("/api/coins/{id}/market_chart", async (string id, string days, IMedia
     var result = await mediator.Send(new GetCoinMarketChartQuery(id, days));
     return Results.Ok(result);
 });
+
+if (app.Environment.IsEnvironment("Test"))
+{
+    app.MapTestEndpoints();
+}
 
 app.Run();
 

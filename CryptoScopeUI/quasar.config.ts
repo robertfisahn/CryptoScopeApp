@@ -1,5 +1,11 @@
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file
+import { config as loadEnv } from 'dotenv'
+import { join } from 'path'
+
+const mode = process.env.VUE_APP_ENV || 'development'
+
+loadEnv({ path: join(__dirname, `.env.${mode}`) })
 
 import { defineConfig } from '#q-app/wrappers';
 
@@ -39,6 +45,10 @@ export default defineConfig((/* ctx */) => {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#build
     build: {
+      env: {
+        VUE_API_BASE_URL: process.env.VUE_API_BASE_URL || 'http://localhost:5218/api/',
+        VUE_APP_ENV: process.env.VUE_APP_ENV || 'development'
+      },
       target: {
         browser: [ 'es2022', 'firefox115', 'chrome115', 'safari14' ],
         node: 'node20'

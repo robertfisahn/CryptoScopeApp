@@ -9,14 +9,6 @@ export default defineConfig({
     viewport: { width: 1280, height: 800 },
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
-  },
-  projects: [
-    {
-      name: 'electron',
-      use: {
-        launchOptions: {},
-      },
-    },
-  ],
+    video: 'retain-on-failure'
+  }
 });
