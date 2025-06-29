@@ -440,4 +440,4 @@ yarn-error.log*
 .env.local*
 
 CryptoScopeUI/dist
-CryptoScopeAPI/coins.db
+CryptoScopeAPI/*.db

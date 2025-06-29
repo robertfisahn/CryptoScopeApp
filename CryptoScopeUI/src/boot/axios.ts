@@ -4,7 +4,7 @@ import { logger } from 'src/utils/logger';
 import { handleApiError } from 'src/handlers/errors/handleApiError';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5218',
+  baseURL: process.env.VUE_API_BASE_URL!,
   timeout: 10000
 });
 

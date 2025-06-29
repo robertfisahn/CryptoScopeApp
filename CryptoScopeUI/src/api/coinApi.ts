@@ -3,7 +3,7 @@ import { enqueueRequest } from 'src/utils/queue';
 
 export const coinApi = {
   getCoinDetails: (id: string) =>
-    enqueueRequest(() => api.get(`/api/coins/${id}`), 
+    enqueueRequest(() => api.get(`/coins/${id}`), 
       `CoinDetailsStore::${id}`, { 
         priority: 'high', 
         taskId: `CoinDetailsStore::${id}`, 
@@ -12,7 +12,7 @@ export const coinApi = {
     ),
 
   getCoinMarketChart: (id: string, days: string) =>
-    enqueueRequest(() => api.get(`/api/coins/${id}/market_chart`, { 
+    enqueueRequest(() => api.get(`/coins/${id}/market_chart`, { 
         params: { 
           vs_currency: 'usd', 
           days 
@@ -26,7 +26,7 @@ export const coinApi = {
     ),
 
   getCoins: () =>
-    enqueueRequest(() => api.get('/api/coins', {
+    enqueueRequest(() => api.get('/coins', {
       params: {
         vs_currency: 'usd',
         order: 'market_cap_desc',
@@ -37,5 +37,5 @@ export const coinApi = {
     }), 'CoinListStore'),
 
   getSearchList: () =>
-    enqueueRequest(() => api.get('/api/coins/search'), 'SearchStore')
+    enqueueRequest(() => api.get('/coins/search'), 'SearchStore')
 };

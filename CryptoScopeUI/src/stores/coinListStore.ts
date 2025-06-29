@@ -14,8 +14,10 @@ export const useCoinListStore = defineStore('coinList', () => {
   const refreshInterval = ref<number | null>(null);
   const autoRefreshMs = ref<number | null>(null);
 
+  const isTestEnv = process.env.VUE_APP_ENV === 'test';
+  console.log('process.env.VUE_APP_ENV:', process.env.VUE_APP_ENV);
   async function fetchCoins(force = false) {
-    if (loadFromCache() && !force) {
+    if (!isTestEnv && loadFromCache() && !force) {
       logger.debug('[CoinListStore] Loaded coins from cache.');
       return;
     }
@@ -89,6 +91,7 @@ export const useCoinListStore = defineStore('coinList', () => {
     fetchCoins,
     startAutoRefresh,
     stopAutoRefresh,
-    restartAutoRefreshIfSet
+    restartAutoRefreshIfSet,
+    isTestEnv
   };
 });
