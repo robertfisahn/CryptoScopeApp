@@ -441,3 +441,14 @@ yarn-error.log*
 
 CryptoScopeUI/dist
 CryptoScopeAPI/*.db
+
+# Dotnet publish artifacts
+CryptoScopeAPI/out/
+
+# SQLite DB and temp files
+CryptoScopeAPI/*.db
+CryptoScopeAPI/*.db-shm
+CryptoScopeAPI/*.db-wal
+
+# Logs
+CryptoScopeAPI/logs/
