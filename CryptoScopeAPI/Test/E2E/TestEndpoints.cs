@@ -8,6 +8,8 @@ public static class TestEndpoints
 {
     public static void MapTestEndpoints(this IEndpointRouteBuilder app)
     {
+        app.MapMethods("/api/test/health", ["GET", "HEAD"], () => Results.Ok("Healthy!"));
+
         app.MapGet("/api/test/coins", async (AppDbContext db, IMapper _mapper) =>
         {
             var coins = await db.Coins.ToListAsync();

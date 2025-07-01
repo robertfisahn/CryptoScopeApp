@@ -1,0 +1,101 @@
+name: CI - CryptoScopeApp
+
+on:
+  push:
+    branches:
+      - "feature/**"
+      - "fix/**"
+      - "refactor/**"
+      - "ci/**"
+      - "chore/**"
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-test-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore .NET dependencies
+        run: dotnet restore ./CryptoScopeAPI/CryptoScopeAPI.csproj
+
+      - name: Build .NET application
+        run: dotnet build ./CryptoScopeAPI/CryptoScopeAPI.csproj --no-restore --configuration Release
+
+      - name: Run Backend Unit Tests
+        run: dotnet test ./CryptoScopeAPI.Tests/CryptoScopeAPI.Tests.csproj --verbosity normal
+
+      - name: Run Backend in Test Mode
+        working-directory: ./CryptoScopeAPI
+        run: |
+          mkdir -p ../logs
+          dotnet run --launch-profile Test > ../logs/backend.log 2>&1 &
+
+      - name: Wait for Backend
+        run: |
+          for i in {1..30}; do
+            echo "Checking backend health (attempt $i)..."
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5888/api/test/health || echo "000")
+            if [ "$code" = "200" ]; then
+              echo "✅ Backend is healthy (HTTP 200)"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "❌ Backend not ready after timeout"
+          cat logs/backend.log || echo "No logs"
+          exit 1
+          
+      - name: Upload backend log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-log
+          path: logs/backend.log
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Frontend Dependencies
+        working-directory: ./CryptoScopeUI
+        run: npm install
+
+      - name: Run Frontend in Test Mode
+        working-directory: ./CryptoScopeUI
+        run: |
+          npm run dev:test &
+          sleep 10
+
+      - name: Install Playwright Browsers
+        working-directory: ./CryptoScopeUI
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright E2E Tests
+        working-directory: ./CryptoScopeUI
+        run: npx playwright test
+
+      - name: Upload Playwright Test Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
