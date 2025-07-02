@@ -29,15 +29,19 @@ public abstract class IntegrationTestBase : IClassFixture<WebApplicationFactory<
                     services.Remove(dbContextDescriptor);
                 }
 
+                var dbName = "TestDb_Integration_" + Guid.NewGuid();
+
                 services.AddDbContext<AppDbContext>(options =>
-                    options.UseInMemoryDatabase("TestDb"));
+                    options.UseInMemoryDatabase(dbName));
+
+                var sp = services.BuildServiceProvider();
+
+                using var scope = sp.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                db.Database.EnsureCreated();
+                TestDataSeeder.Seed(db);
             });
         });
-
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        TestDataSeeder.Seed(db);
-
         _client = _factory.CreateClient();
     }
 }

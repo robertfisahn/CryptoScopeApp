@@ -6,21 +6,16 @@ public static class TestDataSeeder
 {
     public static void Seed(AppDbContext db)
     {
+        db.Database.EnsureDeleted();
         db.Database.EnsureCreated();
-        ClearCoins(db);
+
         SeedCoinDetails(db);
         SeedTop10Coins(db);
         SeedCoinMarketChart(db);
         SeedSearchCoins(db);
     }
-    private static void ClearCoins(AppDbContext db)
-    {
-        db.Coins.RemoveRange(db.Coins);
-        db.SaveChanges();
-    }
     public static void SeedCoinDetails(AppDbContext db)
     {
-        db.CoinDetails.RemoveRange(db.CoinDetails);
         db.CoinDetails.Add(new CoinDetails
         {
             CoinId = "bitcoin",
@@ -39,8 +34,6 @@ public static class TestDataSeeder
     }
     public static void SeedCoinMarketChart(AppDbContext db)
     {
-        db.CoinMarketCharts.RemoveRange(db.CoinMarketCharts);
-
         db.CoinMarketCharts.Add(new CoinMarketChart
         {
             CoinId = "bitcoin",
@@ -55,7 +48,6 @@ public static class TestDataSeeder
     }
     public static void SeedSearchCoins(AppDbContext db)
     {
-        db.SearchCoins.RemoveRange(db.SearchCoins);
         db.SearchCoins.AddRange(
             new SearchCoin { CoinId = "bitcoin", Name = "Bitcoin", Symbol = "btc" },
             new SearchCoin { CoinId = "ethereum", Name = "Ethereum", Symbol = "eth" },
