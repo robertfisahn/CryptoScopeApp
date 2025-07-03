@@ -12,6 +12,7 @@
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
     "dev:test": "cross-env VUE_APP_ENV=test quasar dev",
+    "e2e": "powershell -ExecutionPolicy Bypass ../run-e2e.ps1",
     "build": "quasar build",
     "postinstall": "quasar prepare"
   },
